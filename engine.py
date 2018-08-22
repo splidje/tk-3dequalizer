@@ -209,3 +209,21 @@ class TDE4Engine(Engine):
         # Display the message in Maya script editor in a thread safe manner.
         print msg
 
+    def _create_dialog(self, title, bundle, widget, parent):
+        """
+        Overriden from the base Engine class - create a TankQDialog with the specified widget 
+        embedded.
+        
+        :param title: The title of the window
+        :param bundle: The app, engine or framework object that is associated with this window
+        :param widget: A QWidget instance to be embedded in the newly created dialog.
+        :param parent: The parent QWidget for the dialog
+        """
+        from tank.platform.qt import QtCore
+        dialog = super(TDE4Engine, self)._create_dialog(title, bundle, widget, parent)
+        self._apply_external_stylesheet(self, dialog)
+        dialog.setWindowFlags(dialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+        dialog.raise_()
+        dialog.activateWindow()
+        return dialog
+
