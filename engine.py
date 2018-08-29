@@ -92,6 +92,9 @@ class TDE4Engine(Engine):
         # Run a series of app instance commands at startup.
         #self._run_app_instance_commands()
 
+    def post_qt_init(self):
+        self._initialize_dark_look_and_feel()
+
     def post_context_change(self, old_context, new_context):
         """
         Runs after a context change. The Maya event watching will be stopped
@@ -221,7 +224,6 @@ class TDE4Engine(Engine):
         """
         from tank.platform.qt import QtCore
         dialog = super(TDE4Engine, self)._create_dialog(title, bundle, widget, parent)
-        self._apply_external_stylesheet(self, dialog)
         dialog.setWindowFlags(dialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
         dialog.raise_()
         dialog.activateWindow()

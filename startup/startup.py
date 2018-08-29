@@ -15,7 +15,8 @@ def _timer():
     QtCore.QCoreApplication.processEvents()
 
 if __name__ == '__main__':
-    if not tank.platform.current_engine():
+    engine = tank.platform.current_engine()
+    if not engine:
         from tank_vendor.shotgun_authentication import ShotgunAuthenticator
         user = ShotgunAuthenticator(tank.util.CoreDefaultsManager()).get_user()
         tank.set_authenticated_user(user)
@@ -26,4 +27,5 @@ if __name__ == '__main__':
     if not QtCore.QCoreApplication.instance():
         QtGui.QApplication([])
         tde4.setTimerCallbackFunction("_timer", 100)
+        engine.post_qt_init()
 
