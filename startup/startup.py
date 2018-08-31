@@ -13,6 +13,17 @@ import tank
 
 def _timer():
     QtCore.QCoreApplication.processEvents()
+    # check for open file change
+    global g_current_file
+    cur_file = tde4.getProjectPath()
+    if g_current_file != cur_file:
+        if cur_file:
+            engine = tank.platform.current_engine()
+            context = engine.context
+            new_context = engine.tank.context_from_path(cur_file, context)
+            if new_context != context:
+                tank.platform.change_context(new_context)
+        g_current_file = cur_file
 
 if __name__ == '__main__':
     engine = tank.platform.current_engine()
@@ -26,6 +37,8 @@ if __name__ == '__main__':
     # Qt
     if not QtCore.QCoreApplication.instance():
         QtGui.QApplication([])
-        tde4.setTimerCallbackFunction("_timer", 100)
+        global g_current_file
+        g_current_file = tde4.getProjectPath()
+        tde4.setTimerCallbackFunction("_timer", 10)
         engine.post_qt_init()
 
