@@ -11,6 +11,10 @@ class TDE4Camera(object):
         return self.name
 
     @property
+    def id_(self):
+        return self._cam_id
+
+    @property
     def name(self):
         return tde4.getCameraName(self._cam_id)
     @name.setter
@@ -96,4 +100,8 @@ class TDE4Camera(object):
 class TDE4Lens(object):
     def __init__(self, lens_id):
         self._lens_id = lens_id
+
+    @property
+    def id_(self):
+        return self._lens_id
 
