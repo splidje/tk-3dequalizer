@@ -3,7 +3,7 @@ import tde4
 ###
 # CAMERA
 
-class TDE4Camera(object):
+class TDECamera(object):
     def __init__(self, cam_id):
         self._cam_id = cam_id
 
@@ -80,7 +80,7 @@ class TDE4Camera(object):
 
     @property
     def lens(self):
-        return TDE4Lens(tde4.getCameraLens(self._cam_id))
+        return TDELens(tde4.getCameraLens(self._cam_id))
 
     @property
     def is_selected(self):
@@ -88,16 +88,16 @@ class TDE4Camera(object):
 
     @staticmethod
     def iter_all():
-        return (TDE4Camera(i) for i in tde4.getCameraList())
+        return (TDECamera(i) for i in tde4.getCameraList())
     
     @staticmethod
     def iter_selected():
-        return (c for c in TDE4Camera.iter_all() if c.is_selected)
+        return (c for c in TDECamera.iter_all() if c.is_selected)
 
 ######
 # LENS
 
-class TDE4Lens(object):
+class TDELens(object):
     def __init__(self, lens_id):
         self._lens_id = lens_id
 

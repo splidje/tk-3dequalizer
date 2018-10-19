@@ -32,7 +32,7 @@ if __name__ == '__main__':
         user = ShotgunAuthenticator(tank.util.CoreDefaultsManager()).get_user()
         tank.set_authenticated_user(user)
         context = tank.context.deserialize(os.environ.get("TANK_CONTEXT"))
-        engine = tank.platform.start_engine('tk-3de4', context.tank, context)
+        engine = tank.platform.start_engine('tk-3dequalizer', context.tank, context)
 
     # Qt
     if not QtCore.QCoreApplication.instance():

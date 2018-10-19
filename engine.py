@@ -1,5 +1,5 @@
 """
-A 3dequalizer4 engine for Tank.
+A 3dequalizer engine for Tank.
 
 """
 
@@ -15,14 +15,14 @@ import tempfile
 
 from tank.platform import Engine
 
-class TDE4Engine(Engine):
+class TDEqualizerEngine(Engine):
     @property
     def context_change_allowed(self):
         return True
 
     @property
     def host_info(self):
-        host_info = {"name": "3DEqualizer4", "version": "unknown"}
+        host_info = {"name": "3DEqualizer", "version": "unknown"}
         try:
             import tde4
             host_info['name'], host_info['version'] = re.match("^([^\s]+)\s+(.*)$", tde4.get3DEVersion()).groups()
@@ -99,7 +99,7 @@ class TDE4Engine(Engine):
 
     def _create_dialog(self, title, bundle, widget, parent):
         from tank.platform.qt import QtCore
-        dialog = super(TDE4Engine, self)._create_dialog(title, bundle, widget, parent)
+        dialog = super(TDEqualizerEngine, self)._create_dialog(title, bundle, widget, parent)
         dialog.setWindowFlags(dialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
         dialog.raise_()
         dialog.activateWindow()
@@ -109,8 +109,8 @@ class TDE4Engine(Engine):
     # custom api
     
     def iter_all_cameras(self):
-        return self.import_module('tk_3de4').api.TDE4Camera.iter_all()
+        return self.import_module('tk_3dequalizer').api.TDECamera.iter_all()
 
     def iter_selected_cameras(self):
-        return self.import_module('tk_3de4').api.TDE4Camera.iter_selected()
+        return self.import_module('tk_3dequalizer').api.TDECamera.iter_selected()
 
