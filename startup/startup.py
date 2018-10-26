@@ -4,7 +4,6 @@
 import os
 import sys
 import tde4
-from PySide import QtGui, QtCore
 
 sys.path.append(
     os.path.join(os.getenv('TANK_CURRENT_PC'), 'install', 'core', 'python')
@@ -12,6 +11,8 @@ sys.path.append(
 import tank
 
 def _timer():
+    from tank.platform.qt import QtCore, QtGui
+
     QtCore.QCoreApplication.processEvents()
     # check for open file change
     global g_current_file
@@ -33,6 +34,8 @@ if __name__ == '__main__':
         tank.set_authenticated_user(user)
         context = tank.context.deserialize(os.environ.get("TANK_CONTEXT"))
         engine = tank.platform.start_engine('tk-3dequalizer', context.tank, context)
+
+    from tank.platform.qt import QtCore, QtGui
 
     # Qt
     if not QtCore.QCoreApplication.instance():

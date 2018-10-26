@@ -100,7 +100,7 @@ class TDEqualizerEngine(Engine):
     def _create_dialog(self, title, bundle, widget, parent):
         from tank.platform.qt import QtCore
         dialog = super(TDEqualizerEngine, self)._create_dialog(title, bundle, widget, parent)
-        dialog.setWindowFlags(dialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
+        #dialog.setWindowFlags(dialog.windowFlags() | QtCore.Qt.WindowStaysOnTopHint)
         dialog.raise_()
         dialog.activateWindow()
         return dialog
@@ -108,9 +108,16 @@ class TDEqualizerEngine(Engine):
     #############
     # custom api
     
+    @property
+    def api(self):
+        return self.import_module('tk_3dequalizer').api
+
     def iter_all_cameras(self):
-        return self.import_module('tk_3dequalizer').api.TDECamera.iter_all()
+        return self.api.TDECamera.iter_all()
 
     def iter_selected_cameras(self):
-        return self.import_module('tk_3dequalizer').api.TDECamera.iter_selected()
+        return self.api.TDECamera.iter_selected()
+
+    def iter_all_point_groups(self):
+        return self.api.TDEPointGroup.iter_all()
 
