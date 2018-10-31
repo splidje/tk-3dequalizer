@@ -16,6 +16,9 @@ class TDEPoint(object):
     @property
     def name(self):
         return tde4.getPointName(self._group.id_, self._point_id)
+    @name.setter
+    def name(self, val):
+        tde4.setPointName(self._group.id_, self._point_id, val)
 
     @property
     def is_calculated_3d(self):
