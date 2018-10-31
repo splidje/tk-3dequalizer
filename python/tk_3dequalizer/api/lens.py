@@ -111,7 +111,7 @@ class TDELens(object):
                     self.get_distortion_parameter(pn, f)
                     for f in (
                         self.dynamic_distortion_mode == 'DISTORTION_STATIC' and (1,)
-                        or xrange(1, self._cam.frame_count)
+                        or xrange(1, self._cam.frame_count + 1)
                     )
                 ]
                 for pn in
