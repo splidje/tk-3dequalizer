@@ -16,6 +16,8 @@ import tempfile
 from tank.platform import Engine
 
 class TDEqualizerEngine(Engine):
+    _custom_scripts_dir_path = None
+
     @property
     def context_change_allowed(self):
         return True
@@ -36,11 +38,13 @@ class TDEqualizerEngine(Engine):
         if self.has_ui:
             self.logger.info("Creating Shotgun menu...")
 
+            self._cleanup_custom_scripts_dir_path()
+
             # create temp dir
-            self.custom_scripts_dir_path = tempfile.mkdtemp()
+            self._custom_scripts_dir_path = tempfile.mkdtemp()
 
             for i, (name, command) in enumerate(self.commands.iteritems()):
-                script_path = os.path.join(self.custom_scripts_dir_path, "{:04d}.py".format(i))
+                script_path = os.path.join(self._custom_scripts_dir_path, "{:04d}.py".format(i))
                 f = open(script_path, "w")
                 f.write("\n".join((
                     "# 3DE4.script.name: {}".format(name),
@@ -52,11 +56,13 @@ class TDEqualizerEngine(Engine):
                 f.close()
 
             toks = os.getenv('PYTHON_CUSTOM_SCRIPTS_3DE4', "").split(':')
-            toks.append(self.custom_scripts_dir_path)
+            toks.append(self._custom_scripts_dir_path)
             os.environ['PYTHON_CUSTOM_SCRIPTS_3DE4'] = ":".join(toks)
 
             import tde4
             tde4.rescanPythonDirs()
+            
+            self.logger.info("Shotgun menu created.")
 
             return True
         return False
@@ -74,10 +80,14 @@ class TDEqualizerEngine(Engine):
         self.logger.debug("%s: Destroying...", self)
 
         toks = os.getenv('PYTHON_CUSTOM_SCRIPTS_3DE4', "").split(':')
-        toks.remove(self.custom_scripts_dir_path)
+        toks.remove(self._custom_scripts_dir_path)
         os.environ['PYTHON_CUSTOM_SCRIPTS_3DE4'] = ":".join(toks)
 
-        shutil.rmtree(self.custom_scripts_dir_path)
+        self._cleanup_custom_scripts_dir_path()
+
+    def _cleanup_custom_scripts_dir_path(self):
+        if self._custom_scripts_dir_path and os.path.exists(self._custom_scripts_dir_path):
+            shutil.rmtree(self._custom_scripts_dir_path)
 
     @property
     def has_ui(self):
