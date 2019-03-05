@@ -1,6 +1,7 @@
 import os
 import sys
 import subprocess
+import tempfile
 
 import sgtk
 from sgtk.platform import SoftwareLauncher, SoftwareVersion, LaunchInformation
@@ -26,17 +27,21 @@ class TDE4Launcher(SoftwareLauncher):
 
         # Run the engine's startup/*.py files when 3DEqualizer starts up
         # by appending it to the env PYTHON_CUSTOM_SCRIPTS_3DE4.
-        startup_path = os.path.join(self.disk_location, "startup")
-        #sgtk.util.append_path_to_env_var("PYTHON_CUSTOM_SCRIPTS_3DE4", startup_path)
-        os.environ["PYTHON_CUSTOM_SCRIPTS_3DE4"] = startup_path
-        required_env["PYTHON_CUSTOM_SCRIPTS_3DE4"] = os.environ["PYTHON_CUSTOM_SCRIPTS_3DE4"]
+        startup_path = os.path.join(self.disk_location, 'startup')
+
+        # Get path to temp menu folder, and add it to the environment.
+        menufolder = tempfile.mkdtemp(prefix='tk-3de4_')
+        required_env['TK_3DE4_MENU_DIR'] = menufolder
+
+        required_env['PYTHON_CUSTOM_SCRIPTS_3DE4'] = os.pathsep.join(
+            [x for x in os.getenv('PYTHON_CUSTOM_SCRIPTS_3DE4', '').split(os.pathsep) if x]
+            + [startup_path, menufolder])
 
         # Add context information info to the env.
-        required_env["TANK_CONTEXT"] = sgtk.Context.serialize(self.context)
+        required_env['TANK_CONTEXT'] = sgtk.Context.serialize(self.context)
 
         # open a file
         if file_to_open:
-            args += " {}".format(subprocess.list2cmdline(("-open", file_to_open)))
+            args += ' {}'.format(subprocess.list2cmdline(('-open', file_to_open)))
 
         return LaunchInformation(exec_path, args, required_env)
-
