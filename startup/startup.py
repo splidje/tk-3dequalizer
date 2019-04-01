@@ -39,7 +39,8 @@ if __name__ == '__main__':
 
     # Qt
     if not QtCore.QCoreApplication.instance():
-        QtGui.QApplication([])
+        # WARNING: assign to app variable to make sure we keep a reference to the created QApplication
+        app = QtGui.QApplication([])
         global g_current_file
         g_current_file = tde4.getProjectPath()
         tde4.setTimerCallbackFunction("_timer", 10)
