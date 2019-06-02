@@ -11,7 +11,6 @@ import time
 import os
 import logging
 import shutil
-import tempfile
 
 from tank.platform import Engine
 
@@ -36,8 +35,17 @@ class TDE4Engine(Engine):
         if self.has_ui:
             self.logger.info("Creating Shotgun menu...")
 
-            # create temp dir
-            self.custom_scripts_dir_path = tempfile.mkdtemp()
+            # Get temp folder path and create it if needed.
+            self.custom_scripts_dir_path = os.environ['TK_3DE4_MENU_DIR']
+            try:
+                os.makedirs(self.custom_scripts_dir_path)
+            except OSError as error:
+                if error.errno != 17: # Don't error if folder already exists.
+                    raise
+
+            # Clear it.
+            for item in os.listdir(self.custom_scripts_dir_path):
+                os.remove(os.path.join(self.custom_scripts_dir_path, item))
 
             for i, (name, command) in enumerate(self.commands.iteritems()):
                 script_path = os.path.join(self.custom_scripts_dir_path, "{:04d}.py".format(i))
@@ -50,10 +58,6 @@ class TDE4Engine(Engine):
                     "   tank.platform.current_engine().commands[{}]['callback']()".format(repr(name)),
                 )))
                 f.close()
-
-            toks = os.getenv('PYTHON_CUSTOM_SCRIPTS_3DE4', "").split(':')
-            toks.append(self.custom_scripts_dir_path)
-            os.environ['PYTHON_CUSTOM_SCRIPTS_3DE4'] = ":".join(toks)
 
             import tde4
             tde4.rescanPythonDirs()
@@ -73,11 +77,11 @@ class TDE4Engine(Engine):
     def destroy_engine(self):
         self.logger.debug("%s: Destroying...", self)
 
-        toks = os.getenv('PYTHON_CUSTOM_SCRIPTS_3DE4', "").split(':')
-        toks.remove(self.custom_scripts_dir_path)
-        os.environ['PYTHON_CUSTOM_SCRIPTS_3DE4'] = ":".join(toks)
-
-        shutil.rmtree(self.custom_scripts_dir_path)
+        try:
+            shutil.rmtree(self.custom_scripts_dir_path)
+        except OSError as error:
+            if error.errno != 2: # Don't error if folder not found.
+                raise
 
     @property
     def has_ui(self):
@@ -103,4 +107,3 @@ class TDE4Engine(Engine):
         dialog.raise_()
         dialog.activateWindow()
         return dialog
-
