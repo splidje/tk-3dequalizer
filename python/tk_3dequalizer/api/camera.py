@@ -54,10 +54,11 @@ class TDECamera(object):
 
     @property
     def image_frame_range(self):
-        return tde4.getCameraSequenceAttr(self._cam_id)
+        from frame_range import FrameRange
+        return FrameRange(*tde4.getCameraSequenceAttr(self._cam_id))
     @image_frame_range.setter
     def image_frame_range(self, val):
-        tde4.setCameraSequenceAttr(self._cam_id, val)
+        tde4.setCameraSequenceAttr(self._cam_id, *val.ranges[0])
 
     @property
     def type_(self):
@@ -76,6 +77,9 @@ class TDECamera(object):
     @property
     def frame_offset(self):
         return tde4.getCameraFrameOffset(self._cam_id)
+    @frame_offset.setter
+    def frame_offset(self, val):
+        tde4.setCameraFrameOffset(self._cam_id, val)
 
     @property
     def zooming_flag(self):
