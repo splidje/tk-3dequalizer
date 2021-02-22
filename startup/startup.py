@@ -36,6 +36,7 @@ if __name__ == '__main__':
         engine = tank.platform.start_engine('tk-3dequalizer', context.tank, context)
 
     from tank.platform.qt import QtCore, QtGui
+    engine.logger.info("Welcome!")
 
     # Qt
     if not QtCore.QCoreApplication.instance():
@@ -43,6 +44,5 @@ if __name__ == '__main__':
         app = QtGui.QApplication([])
         global g_current_file
         g_current_file = tde4.getProjectPath()
-        tde4.setTimerCallbackFunction("_timer", 50)
+        tde4.setTimerCallbackFunction("_timer", 100)
         engine.post_qt_init()
-
