@@ -43,6 +43,6 @@ if __name__ == '__main__':
         app = QtGui.QApplication([])
         global g_current_file
         g_current_file = tde4.getProjectPath()
-        tde4.setTimerCallbackFunction("_timer", 10)
+        tde4.setTimerCallbackFunction("_timer", 50)
         engine.post_qt_init()
 
