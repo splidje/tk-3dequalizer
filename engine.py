@@ -20,6 +20,7 @@ from sgtk.platform import Engine
 
 class TDEqualizerEngine(Engine):
     def __init__(self, *args, **kwargs):
+        self._current_file = tde4.getProjectPath()
         self._custom_scripts_dir_path = None
         Engine.__init__(self, *args, **kwargs)
 
@@ -45,7 +46,6 @@ class TDEqualizerEngine(Engine):
             # the qt app, or python will destroy it and
             # ruin everything
             self._qt_app = QtGui.QApplication([])
-            self._current_file = tde4.getProjectPath()
             self._initialize_dark_look_and_feel()
             tde4.setTimerCallbackFunction(
                 "sgtk.platform.current_engine()._tde_timer", 50
@@ -76,7 +76,7 @@ class TDEqualizerEngine(Engine):
         try:
             import tde4
             host_info["name"], host_info["version"] = re.match(
-                "^([^\s]+)\s+(.*)$", tde4.get3DEVersion()
+                r"^([^\s]+)\s+(.*)$", tde4.get3DEVersion()
             ).groups()
         except:
             # Fallback to initialized above
