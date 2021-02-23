@@ -54,11 +54,10 @@ class TDECamera(object):
 
     @property
     def image_frame_range(self):
-        from frame_range import FrameRange
-        return FrameRange(*tde4.getCameraSequenceAttr(self._cam_id))
+        return tde4.getCameraSequenceAttr(self._cam_id)
     @image_frame_range.setter
     def image_frame_range(self, val):
-        tde4.setCameraSequenceAttr(self._cam_id, *val.ranges[0])
+        tde4.setCameraSequenceAttr(self._cam_id, val)
 
     @property
     def type_(self):
