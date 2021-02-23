@@ -5,6 +5,7 @@ import subprocess
 import sgtk
 from sgtk.platform import SoftwareLauncher, SoftwareVersion, LaunchInformation
 
+
 class TDE4Launcher(SoftwareLauncher):
     """
     Handles launching 3DEqualizer4 executables. Automatically starts up
@@ -39,4 +40,3 @@ class TDE4Launcher(SoftwareLauncher):
             args += " {}".format(subprocess.list2cmdline(("-open", file_to_open)))
 
         return LaunchInformation(exec_path, args, required_env)
-
