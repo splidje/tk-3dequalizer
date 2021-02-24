@@ -74,11 +74,10 @@ class TDEqualizerEngine(Engine):
     def host_info(self):
         host_info = dict(name="3DEqualizer", version="unknown")
         try:
-            import tde4
             host_info["name"], host_info["version"] = re.match(
                 r"^([^\s]+)\s+(.*)$", tde4.get3DEVersion()
             ).groups()
-        except:
+        except Exception:
             # Fallback to initialized above
             pass
 
