@@ -5,17 +5,20 @@ import os
 import sys
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     sys.path.append(
         os.path.join(
             os.getenv("TANK_CURRENT_PC"),
-            "install", "core", "python",
+            "install",
+            "core",
+            "python",
         )
     )
     import sgtk
 
     if not sgtk.platform.current_engine():
         from tank_vendor.shotgun_authentication import ShotgunAuthenticator
+
         user = ShotgunAuthenticator(sgtk.util.CoreDefaultsManager()).get_user()
         sgtk.set_authenticated_user(user)
         context = sgtk.context.deserialize(os.environ.get("TANK_CONTEXT"))

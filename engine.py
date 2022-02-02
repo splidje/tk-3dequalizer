@@ -2,12 +2,9 @@
 A 3dequalizer engine for Tank.
 
 """
-
-import sys
-import traceback
-import re
-import time
+from __future__ import print_function
 import os
+import re
 import logging
 import shutil
 import tempfile
@@ -17,6 +14,8 @@ import tde4
 import sgtk
 from sgtk.platform import Engine
 
+HEARTBEAT_INTERVAL_MS = 50
+
 
 class TDEqualizerEngine(Engine):
     def __init__(self, *args, **kwargs):
@@ -24,23 +23,23 @@ class TDEqualizerEngine(Engine):
         self._custom_scripts_dir_path = None
         Engine.__init__(self, *args, **kwargs)
 
-    def _tde_timer(self):
+    def _heartbeat(self):
         from sgtk.platform.qt import QtCore, QtGui
+
         # Keep Qt alive
         QtCore.QCoreApplication.processEvents()
         # check for open file change
         cur_file = tde4.getProjectPath()
         if self._current_file != cur_file:
             if cur_file:
-                new_context = self.sgtk.context_from_path(
-                    cur_file, self.context
-                )
+                new_context = self.sgtk.context_from_path(cur_file, self.context)
                 if new_context != self.context:
                     sgtk.platform.change_context(new_context)
             self._current_file = cur_file
 
     def pre_app_init(self):
         from sgtk.platform.qt import QtCore, QtGui
+
         if not QtCore.QCoreApplication.instance():
             # WARNING: need to keep a python reference to
             # the qt app, or python will destroy it and
@@ -48,7 +47,8 @@ class TDEqualizerEngine(Engine):
             self._qt_app = QtGui.QApplication([])
             self._initialize_dark_look_and_feel()
             tde4.setTimerCallbackFunction(
-                "sgtk.platform.current_engine()._tde_timer", 50
+                "sgtk.platform.current_engine()._heartbeat",
+                HEARTBEAT_INTERVAL_MS,
             )
 
     def post_app_init(self):
@@ -94,20 +94,24 @@ class TDEqualizerEngine(Engine):
             # create temp dir
             self._custom_scripts_dir_path = tempfile.mkdtemp()
 
-            for i, (name, _) in enumerate(self.commands.iteritems()):
+            for i, (name, _) in enumerate(self.commands.items()):
                 script_path = os.path.join(
                     self._custom_scripts_dir_path, "{:04d}.py".format(i)
                 )
                 f = open(script_path, "w")
-                f.write("\n".join((
-                    "# 3DE4.script.name: {}".format(name),
-                    "# 3DE4.script.gui:	Main Window::Shotgun",
-                    "if __name__ == '__main__':",
-                    "   import sgtk",
-                    "   sgtk.platform.current_engine().commands[{}]['callback']()".format(
-                        repr(name)
-                    ),
-                )))
+                f.write(
+                    "\n".join(
+                        (
+                            "# 3DE4.script.name: {}".format(name),
+                            "# 3DE4.script.gui:	Main Window::Shotgun",
+                            "if __name__ == '__main__':",
+                            "   import sgtk",
+                            "   sgtk.platform.current_engine().commands[{}]['callback']()".format(
+                                repr(name)
+                            ),
+                        )
+                    )
+                )
                 f.close()
 
             toks = os.getenv("PYTHON_CUSTOM_SCRIPTS_3DE4", "").split(":")
@@ -122,7 +126,9 @@ class TDEqualizerEngine(Engine):
         return False
 
     def _cleanup_custom_scripts_dir_path(self):
-        if self._custom_scripts_dir_path and os.path.exists(self._custom_scripts_dir_path):
+        if self._custom_scripts_dir_path and os.path.exists(
+            self._custom_scripts_dir_path
+        ):
             shutil.rmtree(self._custom_scripts_dir_path)
 
     @property
@@ -138,18 +144,21 @@ class TDEqualizerEngine(Engine):
         else:
             formatter = logging.Formatter("Shotgun %(basename)s: %(message)s")
         msg = formatter.format(record)
-        print msg
+        print(msg)
 
     def _create_dialog(self, title, bundle, widget, parent):
         from sgtk.platform.qt import QtCore
-        dialog = super(TDEqualizerEngine, self)._create_dialog(title, bundle, widget, parent)
+
+        dialog = super(TDEqualizerEngine, self)._create_dialog(
+            title, bundle, widget, parent
+        )
         dialog.raise_()
         dialog.activateWindow()
         return dialog
 
     #############
     # custom api
-    
+
     @property
     def api(self):
         return self.import_module("tk_3dequalizer").api
