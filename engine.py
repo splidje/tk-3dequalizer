@@ -7,7 +7,6 @@ import os
 import re
 import logging
 import shutil
-import tempfile
 
 import tde4
 
@@ -59,11 +58,6 @@ class TDEqualizerEngine(Engine):
 
     def destroy_engine(self):
         self.logger.debug("%s: Destroying...", self)
-        if not self._custom_scripts_dir_path:
-            return
-        toks = os.getenv("PYTHON_CUSTOM_SCRIPTS_3DE4", "").split(":")
-        toks.remove(self._custom_scripts_dir_path)
-        os.environ["PYTHON_CUSTOM_SCRIPTS_3DE4"] = ":".join(toks)
         self._cleanup_custom_scripts_dir_path()
 
     @property
@@ -87,12 +81,21 @@ class TDEqualizerEngine(Engine):
         if self.has_ui:
             from sgtk.platform.qt import QtCore, QtGui
 
-            self.logger.info("Creating Shotgun menu...")
+            self.logger.info("Creating Shotgrid menu...")
 
             self._cleanup_custom_scripts_dir_path()
 
-            # create temp dir
-            self._custom_scripts_dir_path = tempfile.mkdtemp()
+            # Get temp folder path and create it if needed.
+            self._custom_scripts_dir_path = os.environ['TK_3DE4_MENU_DIR']
+            try:
+                os.makedirs(self._custom_scripts_dir_path)
+            except OSError as error:
+                if error.errno != 17: # Don't error if folder already exists.
+                    raise
+
+            # Clear it.
+            for item in os.listdir(self._custom_scripts_dir_path):
+                os.remove(os.path.join(self._custom_scripts_dir_path, item))
 
             for i, (name, _) in enumerate(self.commands.items()):
                 script_path = os.path.join(
@@ -103,7 +106,7 @@ class TDEqualizerEngine(Engine):
                     "\n".join(
                         (
                             "# 3DE4.script.name: {}".format(name),
-                            "# 3DE4.script.gui:	Main Window::Shotgun",
+                            "# 3DE4.script.gui:	Main Window::Shotgrid",
                             "if __name__ == '__main__':",
                             "   import sgtk",
                             "   sgtk.platform.current_engine().commands[{}]['callback']()".format(
@@ -114,13 +117,9 @@ class TDEqualizerEngine(Engine):
                 )
                 f.close()
 
-            toks = os.getenv("PYTHON_CUSTOM_SCRIPTS_3DE4", "").split(":")
-            toks.append(self._custom_scripts_dir_path)
-            os.environ["PYTHON_CUSTOM_SCRIPTS_3DE4"] = ":".join(toks)
-
             QtCore.QTimer.singleShot(0, tde4.rescanPythonDirs)
 
-            self.logger.info("Shotgun menu created.")
+            self.logger.info("Shotgrid menu created.")
 
             return True
         return False
@@ -140,9 +139,9 @@ class TDEqualizerEngine(Engine):
 
     def _emit_log_message(self, handler, record):
         if record.levelno < logging.INFO:
-            formatter = logging.Formatter("Debug: Shotgun %(basename)s: %(message)s")
+            formatter = logging.Formatter("Debug: Shotgrid %(basename)s: %(message)s")
         else:
-            formatter = logging.Formatter("Shotgun %(basename)s: %(message)s")
+            formatter = logging.Formatter("Shotgrid %(basename)s: %(message)s")
         msg = formatter.format(record)
         print(msg)
 
