@@ -1,6 +1,3 @@
-from __future__ import absolute_import
-from builtins import range
-from builtins import object
 import tde4
 
 from .lens import TDELens
@@ -68,6 +65,14 @@ class TDECamera(object):
     @image_frame_range.setter
     def image_frame_range(self, val):
         tde4.setCameraSequenceAttr(self._cam_id, val)
+
+    @property
+    def is_image_display_window(self):
+        return bool(tde4.getCameraImportEXRDisplayWindowFlag(self._cam_id))
+
+    @is_image_display_window.setter
+    def is_image_display_window(self, val):
+        tde4.setCameraImportEXRDisplayWindowFlag(self._cam_id, 1 if val else 0)
 
     @property
     def type_(self):
@@ -163,3 +168,8 @@ class TDECamera(object):
     @staticmethod
     def iter_selected():
         return (c for c in TDECamera.iter_all() if c.is_selected)
+
+    @staticmethod
+    def create():
+        cam_id = tde4.createCamera("SEQUENCE")
+        return TDECamera(cam_id)

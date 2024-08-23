@@ -15,7 +15,16 @@ class SceneOperation(HookClass):
     current scene
     """
 
-    def execute(self, operation, file_path, context, parent_action, file_version, read_only, **kwargs):
+    def execute(
+        self,
+        operation,
+        file_path,
+        context,
+        parent_action,
+        file_version,
+        read_only,
+        **kwargs
+    ):
         """
         Main hook entry point
         :param operation:       String
@@ -60,10 +69,14 @@ class SceneOperation(HookClass):
         elif operation == "reset":
 
             if not tde4.isProjectUpToDate():
-                res = QtGui.QMessageBox.question(None,
-                                                 "Save your scene?",
-                                                 "Your scene has unsaved changes. Save before proceeding?",
-                                                 QtGui.QMessageBox.Yes | QtGui.QMessageBox.No | QtGui.QMessageBox.Cancel)
+                res = QtGui.QMessageBox.question(
+                    None,
+                    "Save your scene?",
+                    "Your scene has unsaved changes. Save before proceeding?",
+                    QtGui.QMessageBox.Yes
+                    | QtGui.QMessageBox.No
+                    | QtGui.QMessageBox.Cancel,
+                )
 
                 if res == QtGui.QMessageBox.Cancel:
                     return False

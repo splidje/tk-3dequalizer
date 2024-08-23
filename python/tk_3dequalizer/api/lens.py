@@ -1,5 +1,3 @@
-from builtins import range
-from builtins import object
 import tde4
 
 
@@ -16,6 +14,14 @@ class TDELens(object):
     @property
     def id_(self):
         return self._lens_id
+
+    @property
+    def name(self):
+        return tde4.getLensName(self._lens_id)
+
+    @name.setter
+    def name(self, val):
+        tde4.setLensName(self._lens_id, val)
 
     @property
     def filmback_dimensions(self):
@@ -129,3 +135,7 @@ class TDELens(object):
                 for pn in self.distortion_model_parameter_names
             },
         )
+
+    @property
+    def is_selected(self):
+        return tde4.getLensSelectionFlag(self._cam_id) > 0

@@ -1,19 +1,21 @@
 """
-A 3dequalizer engine for Tank.
+A 3dequalizer engine for SGTK.
 
 """
-from __future__ import print_function
 import os
 import re
 import logging
 import shutil
+import tempfile
 
 import tde4
+from vl_sdv import rot3d, mat3d, VL_APPLY_ZXY
 
 import sgtk
 from sgtk.platform import Engine
+from sgtk.util.filesystem import ensure_folder_exists
 
-HEARTBEAT_INTERVAL_MS = 50
+_HEARTBEAT_INTERVAL_MS = 50
 
 
 class TDEqualizerEngine(Engine):
@@ -23,7 +25,7 @@ class TDEqualizerEngine(Engine):
         Engine.__init__(self, *args, **kwargs)
 
     def _heartbeat(self):
-        from sgtk.platform.qt import QtCore, QtGui
+        from sgtk.platform.qt import QtCore
 
         # Keep Qt alive
         QtCore.QCoreApplication.processEvents()
@@ -47,7 +49,7 @@ class TDEqualizerEngine(Engine):
             self._initialize_dark_look_and_feel()
             tde4.setTimerCallbackFunction(
                 "sgtk.platform.current_engine()._heartbeat",
-                HEARTBEAT_INTERVAL_MS,
+                _HEARTBEAT_INTERVAL_MS,
             )
 
     def post_app_init(self):
@@ -81,18 +83,13 @@ class TDEqualizerEngine(Engine):
         if self.has_ui:
             from sgtk.platform.qt import QtCore, QtGui
 
-            self.logger.info("Creating Shotgrid menu...")
+            self.logger.info("Creating ShotGrid menu...")
 
             self._cleanup_custom_scripts_dir_path()
 
             # Get temp folder path and create it if needed.
-            self._custom_scripts_dir_path = os.environ['TK_3DE4_MENU_DIR']
-            try:
-                os.makedirs(self._custom_scripts_dir_path)
-            except OSError as error:
-                if error.errno != 17: # Don't error if folder already exists.
-                    raise
-
+            self._custom_scripts_dir_path = os.environ["TK_3DE4_MENU_DIR"]
+            ensure_folder_exists(self._custom_scripts_dir_path)
             # Clear it.
             for item in os.listdir(self._custom_scripts_dir_path):
                 os.remove(os.path.join(self._custom_scripts_dir_path, item))
@@ -106,7 +103,7 @@ class TDEqualizerEngine(Engine):
                     "\n".join(
                         (
                             "# 3DE4.script.name: {}".format(name),
-                            "# 3DE4.script.gui:	Main Window::Shotgrid",
+                            "# 3DE4.script.gui:	Main Window::ShotGrid",
                             "if __name__ == '__main__':",
                             "   import sgtk",
                             "   sgtk.platform.current_engine().commands[{}]['callback']()".format(
@@ -119,7 +116,7 @@ class TDEqualizerEngine(Engine):
 
             QtCore.QTimer.singleShot(0, tde4.rescanPythonDirs)
 
-            self.logger.info("Shotgrid menu created.")
+            self.logger.info("ShotGrid menu created.")
 
             return True
         return False
@@ -139,9 +136,9 @@ class TDEqualizerEngine(Engine):
 
     def _emit_log_message(self, handler, record):
         if record.levelno < logging.INFO:
-            formatter = logging.Formatter("Debug: Shotgrid %(basename)s: %(message)s")
+            formatter = logging.Formatter("Debug: ShotGrid %(basename)s: %(message)s")
         else:
-            formatter = logging.Formatter("Shotgrid %(basename)s: %(message)s")
+            formatter = logging.Formatter("ShotGrid %(basename)s: %(message)s")
         msg = formatter.format(record)
         print(msg)
 
@@ -162,6 +159,9 @@ class TDEqualizerEngine(Engine):
     def api(self):
         return self.import_module("tk_3dequalizer").api
 
+    def get_scene_rotation_3d_zxy(self):
+        return rot3d(mat3d(tde4.getSceneRotation3D())).angles(VL_APPLY_ZXY)
+
     def iter_all_cameras(self):
         return self.api.TDECamera.iter_all()
 
@@ -170,3 +170,6 @@ class TDEqualizerEngine(Engine):
 
     def iter_all_point_groups(self):
         return self.api.TDEPointGroup.iter_all()
+
+    def iter_selected_point_groups(self):
+        return self.api.TDEPointGroup.iter_selected()
