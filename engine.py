@@ -6,7 +6,7 @@ import os
 import re
 import logging
 import shutil
-import tempfile
+import traceback
 
 import tde4
 from vl_sdv import rot3d, mat3d, VL_APPLY_ZXY
@@ -16,12 +16,12 @@ from sgtk.platform import Engine
 from sgtk.util.filesystem import ensure_folder_exists
 
 _HEARTBEAT_INTERVAL_MS = 50
+_MENU_FOLDER_PATH = os.environ["TK_3DE4_MENU_FOLDER_PATH"]
 
 
 class TDEqualizerEngine(Engine):
     def __init__(self, *args, **kwargs):
         self._current_file = tde4.getProjectPath()
-        self._custom_scripts_dir_path = None
         Engine.__init__(self, *args, **kwargs)
 
     def _heartbeat(self):
@@ -88,18 +88,19 @@ class TDEqualizerEngine(Engine):
             self._cleanup_custom_scripts_dir_path()
 
             # Get temp folder path and create it if needed.
-            self._custom_scripts_dir_path = os.environ["TK_3DE4_MENU_DIR"]
-            ensure_folder_exists(self._custom_scripts_dir_path)
+            ensure_folder_exists(_MENU_FOLDER_PATH)
 
             for i, (name, _) in enumerate(self.commands.items()):
-                script_path = os.path.join(
-                    self._custom_scripts_dir_path, "{:04d}.py".format(i)
-                )
+                display_name = name
+                # Very strange glitch
+                if display_name == "Export...":
+                    display_name = "Export ..."
+                script_path = os.path.join(_MENU_FOLDER_PATH, "{:04d}.py".format(i))
                 f = open(script_path, "w")
                 f.write(
                     "\n".join(
                         (
-                            "# 3DE4.script.name: {}".format(name),
+                            "# 3DE4.script.name: {}".format(display_name),
                             "# 3DE4.script.gui:	Main Window::ShotGrid",
                             "if __name__ == '__main__':",
                             "   import sgtk",
@@ -119,10 +120,10 @@ class TDEqualizerEngine(Engine):
         return False
 
     def _cleanup_custom_scripts_dir_path(self):
-        if self._custom_scripts_dir_path and os.path.exists(
-            self._custom_scripts_dir_path
-        ):
-            shutil.rmtree(self._custom_scripts_dir_path)
+        try:
+            shutil.rmtree(_MENU_FOLDER_PATH)
+        except OSError as e:
+            self.logger.debug(traceback.format_exc())
 
     @property
     def has_ui(self):

@@ -1,6 +1,7 @@
 import os
 import subprocess
-import tempfile
+import platform
+import errno
 
 import sgtk
 from sgtk.platform import SoftwareLauncher, LaunchInformation
@@ -29,8 +30,24 @@ class TDE4Launcher(SoftwareLauncher):
         startup_path = os.path.join(self.disk_location, "startup")
 
         # Get path to temp menu folder, and add it to the environment.
-        menufolder = tempfile.mkdtemp(prefix="tk-3dequalizer_")
-        required_env["TK_3DE4_MENU_DIR"] = menufolder
+        os_name = platform.system()
+        app_name = "tk-3dequalizer"
+        if os_name == "Windows":
+            menu_folder_path = os.path.join(
+                os.getenv("LOCALAPPDATA"), app_name, "Cache"
+            )
+        elif os_name == "Darwin":
+            menu_folder_path = os.path.expanduser(
+                "~/Library/Caches/{}".format(app_name)
+            )
+        elif os_name == "Linux":
+            menu_folder_path = os.path.expanduser("~/.cache/{}".format(app_name))
+        try:
+            os.makedirs(menu_folder_path)
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+        required_env["TK_3DE4_MENU_FOLDER_PATH"] = menu_folder_path
 
         required_env["PYTHON_CUSTOM_SCRIPTS_3DE4"] = os.pathsep.join(
             [
@@ -38,7 +55,7 @@ class TDE4Launcher(SoftwareLauncher):
                 for x in os.getenv("PYTHON_CUSTOM_SCRIPTS_3DE4", "").split(os.pathsep)
                 if x
             ]
-            + [startup_path, menufolder]
+            + [startup_path, menu_folder_path]
         )
 
         # Add context information info to the env.
