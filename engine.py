@@ -90,9 +90,6 @@ class TDEqualizerEngine(Engine):
             # Get temp folder path and create it if needed.
             self._custom_scripts_dir_path = os.environ["TK_3DE4_MENU_DIR"]
             ensure_folder_exists(self._custom_scripts_dir_path)
-            # Clear it.
-            for item in os.listdir(self._custom_scripts_dir_path):
-                os.remove(os.path.join(self._custom_scripts_dir_path, item))
 
             for i, (name, _) in enumerate(self.commands.items()):
                 script_path = os.path.join(
