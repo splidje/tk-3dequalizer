@@ -35,6 +35,7 @@ class FileExistenceError(OSError):
     """
     Exception when files don't exist on disk.
     """
+
     def __init__(self, path):
         """
         Initialise the class.
@@ -105,6 +106,7 @@ def is_sequence_camera(cam_id):
     """
     return tde4.getCameraType(cam_id) == "SEQUENCE"
 
+
 class TDE4Actions(HookBaseClass):
 
     ##############################################################################################################
@@ -145,7 +147,7 @@ class TDE4Actions(HookBaseClass):
             "Generate actions called for UI element %s. Actions: %s. Publish Data: %s",
             ui_area,
             actions,
-            sg_publish_data
+            sg_publish_data,
         )
 
         action_instances = []
@@ -201,7 +203,7 @@ class TDE4Actions(HookBaseClass):
             "Execute action called for action %s. Parameters: %s. Publish Data: %s",
             name,
             params,
-            sg_publish_data
+            sg_publish_data,
         )
 
         # resolve path
@@ -228,12 +230,17 @@ class TDE4Actions(HookBaseClass):
         if tde4.getNoCameras():
             selected_cameras = filter(is_sequence_camera, tde4.getCameraList(True))
             if selected_cameras:
-                app.logger.info("%d sequence cameras selected, assigning to all", len(selected_cameras))
+                app.logger.info(
+                    "%d sequence cameras selected, assigning to all",
+                    len(selected_cameras),
+                )
                 for cam_id in selected_cameras:
                     current_name = tde4.getCameraName(cam_id)
                     app.logger.debug("Current camera: '%s'", current_name)
                     if current_name.startswith(name):
-                        app.logger.info("'%s' already has name referring to Shot", current_name)
+                        app.logger.info(
+                            "'%s' already has name referring to Shot", current_name
+                        )
                     else:
                         cam_name = name
                         count = 0
@@ -242,11 +249,19 @@ class TDE4Actions(HookBaseClass):
                             cam_name = "{}__{:02}".format(name, count)
                         app.logger.info("Renaming '%s' to '%s'", current_name, cam_name)
                         tde4.setCameraName(cam_id, cam_name)
-                    app.logger.debug("setCameraSequenceAttr: %s, %d, %d, %d", cam_id, start, end, step)
+                    app.logger.debug(
+                        "setCameraSequenceAttr: %s, %d, %d, %d",
+                        cam_id,
+                        start,
+                        end,
+                        step,
+                    )
                     tde4.setCameraSequenceAttr(cam_id, start, end, step)
                     app.logger.debug("setCameraFrameOffset: %s, %d", cam_id, start)
                     tde4.setCameraFrameOffset(cam_id, start)
-                    app.logger.debug("setCameraFrameRangeCalculationFlag: %s, 1", cam_id)
+                    app.logger.debug(
+                        "setCameraFrameRangeCalculationFlag: %s, 1", cam_id
+                    )
                     tde4.setCameraFrameRangeCalculationFlag(cam_id, 1)
                     app.logger.debug("setCameraPath: %s, %s", cam_id, path)
                     tde4.setCameraPath(cam_id, path)
@@ -254,11 +269,11 @@ class TDE4Actions(HookBaseClass):
                 QtGui.QMessageBox.warning(
                     None,
                     "No sequence cameras selected",
-                    "Please select a sequence camera and try again"
+                    "Please select a sequence camera and try again",
                 )
         else:
             QtGui.QMessageBox.warning(
                 None,
                 "No cameras exist",
-                "Please create a sequence camera and try again"
+                "Please create a sequence camera and try again",
             )
